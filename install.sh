@@ -7,11 +7,12 @@ if [ "$(id -u)" -eq 0 ]; then
 fi
 
 sudo xbps-install -Sy void-repo-nonfree
-sudo xbps-install -Sy \
-    intel-ucode foot tofi pipewire wireplumber brightnessctl vim zathura-pdf-mupdf yazi wlsunset elogind grim alsa-pipewire libspa-bluetooth bluez polkit mesa-dri mesa-vulkan-intel vulkan-loader intel-media-driver tlp wlroots0.20-devel make pkg-config gcc aria2
+sudo xbps-install -Sy intel-ucode
 sudo xbps-reconfigure -fa
 
 # may remove void-repo-nonfree, but can't get updates
+
+sudo xbps-install -Sy foot tofi pipewire wireplumber brightnessctl vim zathura-pdf-mupdf yazi wlsunset elogind grim alsa-pipewire libspa-bluetooth bluez polkit mesa-dri mesa-vulkan-intel vulkan-loader intel-media-driver tlp wlroots0.20-devel make pkg-config gcc aria2
 
 cd "$HOME" || exit 1
 
