@@ -44,5 +44,7 @@ echo "link services" > todo
 
 echo "change theme>body+interface font to "Noto Sans" in velotype and code to monospace" > todo
 echo "this mght help - https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb and https://github.com/rnicro/librewolf/releases/download/...lastest" > todo
+echo "make dwl, then sudo install it" > todo
+echo "also need a HIndi font " > todo
 
 echo "remove todo after setup" > todo
