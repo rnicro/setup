@@ -10,8 +10,6 @@ sudo xbps-install -Sy void-repo-nonfree
 sudo xbps-install -Sy intel-ucode
 sudo xbps-reconfigure -fa
 
-# may remove void-repo-nonfree, but can't get updates
-
 sudo xbps-install -Sy foot tofi pipewire wireplumber brightnessctl vim zathura-pdf-mupdf yazi wlsunset elogind grim alsa-pipewire libspa-bluetooth bluez polkit mesa-dri mesa-vulkan-intel vulkan-loader intel-media-driver tlp wlroots0.20-devel make pkg-config gcc aria2
 
 cd "$HOME" || exit 1
@@ -40,6 +38,7 @@ printf '%s\n' \
     "set GRUB" \
     "remove unnecessary services /var/service" \
     "link services" \
+    "may remove void-repo-nonfree, but can't get updates" \
     'change theme>body+interface font to "Noto Sans" in velotype and code to monospace' \
     "this mght help - https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb and https://github.com/rnicro/librewolf/releases/download/...lastest" \
     "remove todo after setup" > todo
