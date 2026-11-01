@@ -1,0 +1,31 @@
+[startup]
+open = "last_opened_file"
+
+[language]
+default_language_id = "en-US"
+
+[theme]
+default_theme_id = "velotype"
+
+[editor]
+show_table_headers = true
+image_paste_behavior = "none"
+image_paste_fallback = "none"
+picgo_server_url = "http://127.0.0.1:36677"
+
+[updates]
+auto_download = false
+
+[status_bar]
+enabled = false
+show_word_count = false
+show_cursor_position = false
+show_sidebar_toggle = false
+show_mode_switch = false
+
+[keybindings]
+
+[fonts]
+body_stack = "Noto Sans"
+code_stack = "monospace"
+ui_stack = "Noto Sans"
