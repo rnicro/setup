@@ -16,7 +16,6 @@ sudo xbps-install -Sy foot tofi pipewire wireplumber brightnessctl vim zathura-p
 
 cd "$HOME" || exit 1
 
-rm -rf .config/tofi .config/foot .config/velotype dwl
 mkdir -p .config/tofi .config/foot .config/velotype
 mkdir -p Downloads Notes Pictures
 
