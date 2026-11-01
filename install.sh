@@ -16,25 +16,23 @@ sudo xbps-install -Sy foot tofi pipewire wireplumber brightnessctl vim zathura-p
 
 cd "$HOME" || exit 1
 
+rm -rf .config/tofi .config/foot .config/velotype dwl
 mkdir -p .config/tofi .config/foot .config/velotype
 mkdir -p Downloads Notes Pictures
 
-aria2c https://github.com/rnicro/setup/raw/refs/heads/main/config -d .config/tofi
-aria2c https://github.com/rnicro/setup/raw/refs/heads/main/tofi-status.sh -d .config/tofi
-aria2c https://github.com/rnicro/setup/raw/refs/heads/main/foot.ini -d .config/foot
-aria2c https://github.com/rnicro/setup/raw/refs/heads/main/.history -d .config/velotype
-aria2c https://github.com/rnicro/setup/raw/refs/heads/main/config.toml -d .config/velotype
+aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/config -d .config/tofi
+aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/tofi-status.sh -d .config/tofi
+aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/foot.ini -d .config/foot
+aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/.history -d .config/velotype
+aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/config.toml -d .config/velotype
 
-aria2c https://github.com/rnicro/setup/raw/refs/heads/main/.bash_profile
-aria2c https://github.com/rnicro/setup/raw/refs/heads/main/.bashrc
-aria2c https://github.com/rnicro/setup/raw/refs/heads/main/start-dwl.sh
-aria2c https://github.com/rnicro/setup/raw/refs/heads/main/dwl.tar
+aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/.bash_profile
+aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/.bashrc
+aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/start-dwl.sh
+aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/dwl.tar
 
 tar xf dwl.tar
 rm dwl.tar
-
-touch todo
-: > todo
 
 printf '%s\n' \
     "download a browser (brave origin, librewolf or helium)" \
@@ -45,4 +43,4 @@ printf '%s\n' \
     "link services" \
     'change theme>body+interface font to "Noto Sans" in velotype and code to monospace' \
     "this mght help - https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb and https://github.com/rnicro/librewolf/releases/download/...lastest" \
-    "remove todo after setup" >> todo
+    "remove todo after setup" > todo
