@@ -33,7 +33,7 @@ rm dwl.tar
 
 printf '%s\n' \
     "download a browser (brave origin, librewolf or helium)" \
-    "download velotype" \
+    "download velotype + kernel, and gpu drivers if i bothered to optimize" \
     "change /etc/fstab" \
     "set GRUB" \
     "remove unnecessary services /var/service" \
