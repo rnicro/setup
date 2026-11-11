@@ -43,9 +43,8 @@ rm dwl.tar
 
 echo "Configuring dwl"
 cd dwl
-rm config.h
+sudo rm config.h
 make clean
-make install 
 sudo make install
 
 cd $HOME
@@ -99,27 +98,27 @@ else
     printf 'Install browser? [y/N] '
     IFS= read -r browser
 
-    if [ "$browser" = y ]; then
-
-        printf 'Which browser (brave/helium)? '
-        IFS= read -r browser_choice
-
-        if [ "$browser_choice" = brave ]; then
-
-            printf 'Brave version: '
-            IFS= read -r ver_brave
-
-            cd xdeb
-
-            aria2c -x16 -s16 -k1M \
-                "https://github.com/brave/brave-browser/releases/download/v${ver_brave}/brave-origin_${ver_brave}_amd64.deb"
-
-            ./xdeb -Sed "brave-origin_${ver_brave}_amd64.deb"
-
-        elif [ "$browser_choice" = helium ]; then
-            echo "Helium installation is not implemented yet."
-        fi
-    fi
+#    if [ "$browser" = y ]; then
+#
+#        printf 'Which browser (brave/helium)? '
+#        IFS= read -r browser_choice
+#
+#        if [ "$browser_choice" = brave ]; then
+#
+#            printf 'Brave version: '
+#            IFS= read -r ver_brave
+#
+#            cd xdeb
+#
+#            aria2c -x16 -s16 -k1M \
+#                "https://github.com/brave/brave-browser/releases/download/v${ver_brave}/brave-origin_${ver_brave}_amd64.deb"
+#
+#            ./xdeb -Sed "brave-origin_${ver_brave}_amd64.deb"
+#
+#        elif [ "$browser_choice" = helium ]; then
+#            echo "Helium installation is not implemented yet."
+#        fi
+#    fi
 fi
 
 cd "$HOME"
