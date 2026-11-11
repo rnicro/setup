@@ -64,6 +64,8 @@ sudo ln -s /etc/sv/tlp /var/service
 sudo ln -s /etc/sv/dbus /var/service
 sudo ln -s /etc/sv/elogind /var/service
 
+#pending to add notes md
+
 printf '%s\n'
     "GRUB_DEFAULT=0" \ 
     "GRUB_TIMEOUT=0" \
