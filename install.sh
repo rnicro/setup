@@ -22,9 +22,9 @@ sudo xbps-install -Sy \
     intel-media-driver tlp wlroots0.20-devel \
     make pkg-config gcc
 
-echo "Creating user directories"
 cd "$HOME"
 
+echo "Creating user directories"
 mkdir -p .config/tofi .config/foot .config/velotype
 mkdir -p Downloads Notes Pictures
 
@@ -55,7 +55,7 @@ sudo make install
 
 cd "$HOME"
 
-echo "Detecting libc and configuring optional software"
+echo "Configuring optional software"
 if ldd --version 2>&1 | grep -qi musl; then
 
     echo "musl detected"
@@ -133,9 +133,9 @@ else
 #    fi
 fi
 
-echo "Enabling selected services"
 cd "$HOME"
 
+echo "Enabling selected services"
 sudo ln -sfn /etc/sv/tlp /var/service/tlp
 sudo ln -sfn /etc/sv/dbus /var/service/dbus
 sudo ln -sfn /etc/sv/elogind /var/service/elogind
