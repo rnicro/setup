@@ -64,9 +64,10 @@ sudo ln -s /etc/sv/tlp /var/service
 sudo ln -s /etc/sv/dbus /var/service
 sudo ln -s /etc/sv/elogind /var/service
 
-echo "GRUB_DEFAULT=0
-GRUB_TIMEOUT=0
-GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3"" | sudo tee /etc/default/grub
+printf '%s\n'
+    "GRUB_DEFAULT=0" \ 
+    "GRUB_TIMEOUT=0" \
+    "GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3"" \ | sudo tee /etc/default/grub
 sudo update-grub
 
 printf '%s\n' \
