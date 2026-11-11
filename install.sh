@@ -41,16 +41,19 @@ if ldd --version 2>&1 | grep -qi musl; then
 		echo "installing linux kernel"
 		aria2c -x16 -s16 -k1M https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps
 		aria2c -x16 -s16 -k1M https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps
+		sudo xbps-install -Ry linux7.3*
 		rm linux7.3*
 	read -n 1 -p "install velotype (y/n): " velotype
 	if $velotype == y; then
 		echo "installing velotype"
 		aria2c -x16 -s16 -k1m https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps
+		sudo xbps-install -Ry velotype*
 		rm velotype*
 	read -n 1 -p "install velotype (y/n): " velotype
 	if $velotype == y; then
 		echo "installing velotype"
 		aria2c -x16 -s16 -k1m https://github.com/rnicro/librewolf/releases/download/159.0-r4/librewolf-159.0_4.x86_64-musl.xbps
+		sudo xbps-install -Ry librewolf*
 		rm librewolf*
 
 else
