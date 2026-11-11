@@ -39,16 +39,19 @@ if ldd --version 2>&1 | grep -qi musl; then
 	read -n 1 -p "install linux kernel (y/n): " kernel
 	if $kernel == y; then
 		echo "installing linux kernel"
-		aria2c -x16 -s16 -k1m https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps
-		https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps
+		aria2c -x16 -s16 -k1M https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps
+		aria2c -x16 -s16 -k1M https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps
+		rm linux7.3*
 	read -n 1 -p "install velotype (y/n): " velotype
 	if $velotype == y; then
 		echo "installing velotype"
 		aria2c -x16 -s16 -k1m https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps
+		rm velotype*
 	read -n 1 -p "install velotype (y/n): " velotype
 	if $velotype == y; then
 		echo "installing velotype"
 		aria2c -x16 -s16 -k1m https://github.com/rnicro/librewolf/releases/download/159.0-r4/librewolf-159.0_4.x86_64-musl.xbps
+		rm librewolf*
 
 else
 	#maybe glibc part
@@ -62,7 +65,10 @@ else
 		read -n 6 -p "which (brave/helium): " browser_choice
 		if $browser_choice == brave; then 
 			read -n 9 -p "version: " ver_brave
+			cd xdeb
 			aria2c -x16 -s16 -k1M https://github.com/brave/brave-browser/releases/download/v${ver_brave}/brave-origin_${ver_brave}_amd64.deb
+			./xdeb -Sed brave-origin_${ver_brave}_amd64.deb
+			#sudo xbps-install -Ry binpkgs brave-origin
 	#have to add for helium
 fi 
 
