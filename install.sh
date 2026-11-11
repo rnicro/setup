@@ -11,7 +11,7 @@ sudo xbps-install -Sy void-repo-nonfree
 sudo xbps-install -Sy intel-ucode
 sudo xbps-reconfigure -fa
 
-sudo xbps-install -Sy foot tofi pipewire wireplumber brightnessctl vim zathura-pdf-mupdf yazi wlsunset elogind grim alsa-pipewire libspa-bluetooth bluez polkit mesa-dri mesa-vulkan-intel vulkan-loader intel-media-driver tlp wlroots0.20-devel make pkg-config gcc 
+sudo xbps-install -Sy foot tofi pipewire wireplumber brightnessctl vim zathura-pdf-mupdf yazi wlsunset elogind grim alsa-pipewire libspa-bluetooth bluez polkit aria2 mesa-dri mesa-vulkan-intel vulkan-loader intel-media-driver tlp wlroots0.20-devel make pkg-config gcc 
 
 cd "$HOME" || exit 1
 
@@ -73,9 +73,10 @@ sudo ln -s /etc/sv/elogind /var/service
 #pending to add notes md
 
 printf '%s\n' \
-    "GRUB_DEFAULT=0" \ 
+    "GRUB_DEFAULT=0" \
     "GRUB_TIMEOUT=0" \
-    'GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3"' | sudo tee /etc/default/grub
+    'GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3"' | 
+	sudo tee /etc/default/grub
 sudo update-grub
 
 printf '%s\n' \
