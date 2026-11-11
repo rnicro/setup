@@ -51,9 +51,9 @@ rm dwl.tar
 
 echo "Configuring dwl"
 cd dwl
-rm config.h
+rm -f config.h
 make clean
-make install
+make
 sudo make install
 
 cd "$HOME"
