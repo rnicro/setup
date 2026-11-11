@@ -41,6 +41,15 @@ chmod +x start-dwl.sh
 tar xf dwl.tar
 rm dwl.tar
 
+echo "Configuring dwl"
+cd dwl
+rm config.h
+make clean
+make install 
+sudo make install
+
+cd $HOME
+
 if ldd --version 2>&1 | grep -qi musl; then
 
     printf 'Install Linux kernel? [y/N] '
