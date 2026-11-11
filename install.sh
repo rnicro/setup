@@ -1,4 +1,7 @@
 #!/bin/sh
+
+#commented lines mean that they are under development
+
 set -e
 
 if [ "$(id -u)" -eq 0 ]; then
@@ -26,6 +29,7 @@ aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnic
 aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/.bash_profile
 aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/.bashrc
 aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/start-dwl.sh
+chmod +x start-dwl.sh
 aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/dwl.tar
 #aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/bookmark.html
 
