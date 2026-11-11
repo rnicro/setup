@@ -19,7 +19,7 @@ echo "Installing base packages"
 sudo xbps-install -Sy \
     foot tofi pipewire wireplumber brightnessctl vim \
     zathura-pdf-mupdf yazi wlsunset elogind grim \
-    alsa-pipewire libspa-bluetooth bluez polkit aria2 \
+    libspa-bluetooth bluez polkit aria2 \
     mesa-dri mesa-vulkan-intel vulkan-loader \
     intel-media-driver tlp wlroots0.20-devel \
     make pkg-config gcc
@@ -43,6 +43,7 @@ aria2c "$rnicro/bookmarks.html"
 aria2c "$rnicro/start-dwl.sh"
 aria2c --allow-overwrite=true "$rnicro/.bash_profile"
 aria2c --allow-overwrite=true "$rnicro/.bashrc"
+chmod +x .config/tofi/tofi-status.sh
 chmod +x start-dwl.sh
 
 echo "Extracting dwl source"
