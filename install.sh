@@ -53,7 +53,7 @@ if ldd --version 2>&1 | grep -qi musl; then
         aria2c -x16 -s16 -k1M \
             https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps
 
-        sudo xbps-install -R linux7.3*
+        sudo xbps-install -R . linux7.3*
         rm -f linux7.3*
     fi
 
@@ -64,7 +64,7 @@ if ldd --version 2>&1 | grep -qi musl; then
         aria2c -x16 -s16 -k1m \
             https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps
 
-        sudo xbps-install -R velotype*
+        sudo xbps-install -R . velotype*
         rm -f velotype*
     fi
 
@@ -75,7 +75,7 @@ if ldd --version 2>&1 | grep -qi musl; then
         aria2c -x16 -s16 -k1m \
             https://github.com/rnicro/librewolf/releases/download/159.0-r4/librewolf-159.0_4.x86_64-musl.xbps
 
-        sudo xbps-install -R librewolf*
+        sudo xbps-install -R . librewolf*
         rm -f librewolf*
     fi
 
@@ -115,9 +115,9 @@ fi
 
 cd "$HOME"
 
-sudo ln -s /etc/sv/tlp /var/service
-sudo ln -s /etc/sv/dbus /var/service
-sudo ln -s /etc/sv/elogind /var/service
+sudo ln -sfn /etc/sv/tlp /var/service/tlp
+sudo ln -sfn /etc/sv/dbus /var/service/dbus
+sudo ln -sfn /etc/sv/elogind /var/service/elogind
 
 printf '%s\n' \
     "GRUB_DEFAULT=0" \
