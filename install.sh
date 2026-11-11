@@ -2,6 +2,8 @@
 
 set -e
 
+#commented lines mean they are under-development
+
 echo "Checking user privileges"
 if [ "$(id -u)" -eq 0 ]; then
     echo "Do not run this script as root."
@@ -56,52 +58,52 @@ sudo make install
 
 cd "$HOME"
 
-echo "Configuring optional software"
-if ldd --version 2>&1 | grep -qi musl; then
-
-    echo "musl detected"
-    printf 'Install Linux kernel? [y/N] '
-    IFS= read -r kernel
-
-    if [ "$kernel" = y ]; then
-        echo "Downloading the custom Linux kernel"
-        aria2c -x16 -s16 -k1M \
-            https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps
-
-        aria2c -x16 -s16 -k1M \
-            https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps
-    fi
-
-    printf 'Install Velotype? [y/N] '
-    IFS= read -r velotype
-
-    if [ "$velotype" = y ]; then
-        echo "Downloading Velotype"
-        aria2c -x16 -s16 -k1m \
-            https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps
-    fi
-
-    printf 'Install LibreWolf? [y/N] '
-    IFS= read -r librewolf
-
-    if [ "$librewolf" = y ]; then
-        echo "Downloading LibreWolf"
-        aria2c -x16 -s16 -k1m \
-            https://github.com/rnicro/librewolf/releases/download/159.0-r4/librewolf-159.0_4.x86_64-musl.xbps
-    fi
-
-else
-
-    echo "glibc detected; preparing xdeb"
-    sudo xbps-install -Sy binutils curl xz
-
-    mkdir -p xdeb
-    aria2c https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb -d xdeb/
-    chmod +x xdeb/xdeb
-
-    printf 'Install browser? [y/N] '
-    IFS= read -r browser
-
+#echo "Configuring optional software"
+#if ldd --version 2>&1 | grep -qi musl; then
+#
+#    echo "musl detected"
+#    printf 'Install Linux kernel? [y/N] '
+#    IFS= read -r kernel
+#
+#    if [ "$kernel" = y ]; then
+#        echo "Downloading the custom Linux kernel"
+#        aria2c -x16 -s16 -k1M \
+#            https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps
+#
+#        aria2c -x16 -s16 -k1M \
+#            https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps
+#    fi
+#
+#    printf 'Install Velotype? [y/N] '
+#    IFS= read -r velotype
+#
+#    if [ "$velotype" = y ]; then
+#        echo "Downloading Velotype"
+#        aria2c -x16 -s16 -k1m \
+#            https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps
+#    fi
+#
+#    printf 'Install LibreWolf? [y/N] '
+#    IFS= read -r librewolf
+#
+#    if [ "$librewolf" = y ]; then
+#        echo "Downloading LibreWolf"
+#        aria2c -x16 -s16 -k1m \
+#            https://github.com/rnicro/librewolf/releases/download/159.0-r4/librewolf-159.0_4.x86_64-musl.xbps
+#    fi
+#
+#else
+#
+#    echo "glibc detected; preparing xdeb"
+#    sudo xbps-install -Sy binutils curl xz
+#
+#    mkdir -p xdeb
+#    aria2c https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb -d xdeb/
+#    chmod +x xdeb/xdeb
+#
+#    printf 'Install browser? [y/N] '
+#    IFS= read -r browser
+#
 #    if [ "$browser" = y ]; then
 #
 #        printf 'Which browser (brave/helium)? '
@@ -123,7 +125,7 @@ else
 #            echo "Helium installation is not implemented yet."
 #        fi
 #    fi
-fi
+#fi
 
 cd "$HOME"
 
