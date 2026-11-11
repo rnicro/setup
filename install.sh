@@ -66,10 +66,10 @@ sudo ln -s /etc/sv/elogind /var/service
 
 #pending to add notes md
 
-printf '%s\n'
+printf '%s\n' \
     "GRUB_DEFAULT=0" \ 
     "GRUB_TIMEOUT=0" \
-    "GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3"" \ | sudo tee /etc/default/grub
+    'GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3"' | sudo tee /etc/default/grub
 sudo update-grub
 
 printf '%s\n' \
