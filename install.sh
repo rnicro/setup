@@ -27,17 +27,49 @@ aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnic
 aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/.bashrc
 aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/start-dwl.sh
 aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/dwl.tar
+#aria2c --allow-overwrite=true --auto-file-renaming=false https://github.com/rnicro/setup/raw/refs/heads/main/bookmark.html
 
 tar xf dwl.tar
 rm dwl.tar
 
+#if ldd --version 2>&1 | grep -qi musl; then
+#	#ask for kernel, velotype, meh gpu drivers
+#	read -n 1 -p "install linux kernel (y/n): " kernel
+#	if $kernel == y; then
+#		echo "installing linux kernel"
+#		aria2c -x16 -s16 -k1m https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps
+#		https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps
+#	read -n 1 -p "install velotype (y/n): " velotype
+#	if $velotype == y; then
+#		echo "installing velotype"
+#		aria2c -x16 -s16 -k1m https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps
+#	read -n 1 -p "install velotype (y/n): " velotype
+#	if $velotype == y; then
+#		echo "installing velotype"
+#		aria2c -x16 -s16 -k1m https://github.com/rnicro/librewolf/releases/download/159.0-r4/librewolf-159.0_4.x86_64-musl.xbps
+#
+#else
+#	mkdir xdeb
+#	aria2c https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb -d xdeb/
+#	chmod +x xdeb/xdeb
+#
+#	#choice for browser
+#fi 
+
+sudo ln -s /etc/sv/tlp /var/service
+sudo ln -s /etc/sv/dbus /var/service
+sudo ln -s /etc/sv/elogind /var/service
+
+echo "GRUB_DEFAULT=0
+GRUB_TIMEOUT=0
+GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3"" | sudo tee /etc/default/grub
+sudo update-grub
+
 printf '%s\n' \
-    "download a browser (brave origin, librewolf or helium)" \
+    "download a browser" \
     "download velotype + kernel, and gpu drivers if i bothered to optimize" \
     "change /etc/fstab" \
-    "set GRUB" \
     "remove unnecessary services /var/service" \
-    "link services" \
     "may remove void-repo-nonfree, but can't get updates" \
     'change theme>body+interface font to "Noto Sans" in velotype and code to monospace' \
     "this mght help - https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb and https://github.com/rnicro/librewolf/releases/download/159.0-r4/librewolf-159.0_4.x86_64-musl.xbps and https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps and https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps and https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps" \
