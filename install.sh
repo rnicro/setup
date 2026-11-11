@@ -49,8 +49,9 @@ rm dwl.tar
 
 echo "Configuring dwl"
 cd dwl
-sudo rm -f config.h
+rm config.h
 make clean
+make install
 sudo make install
 
 cd "$HOME"
@@ -63,39 +64,30 @@ if ldd --version 2>&1 | grep -qi musl; then
     IFS= read -r kernel
 
     if [ "$kernel" = y ]; then
-        echo "Downloading and installing the custom Linux kernel"
+        echo "Downloading the custom Linux kernel"
         aria2c -x16 -s16 -k1M \
             https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps
 
         aria2c -x16 -s16 -k1M \
             https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps
-
-        sudo xbps-install -R . linux7.3*
-        rm -f linux7.3*
     fi
 
     printf 'Install Velotype? [y/N] '
     IFS= read -r velotype
 
     if [ "$velotype" = y ]; then
-        echo "Downloading and installing Velotype"
+        echo "Downloading Velotype"
         aria2c -x16 -s16 -k1m \
             https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps
-
-        sudo xbps-install -R . velotype*
-        rm -f velotype*
     fi
 
     printf 'Install LibreWolf? [y/N] '
     IFS= read -r librewolf
 
     if [ "$librewolf" = y ]; then
-        echo "Downloading and installing LibreWolf"
+        echo "Downloading LibreWolf"
         aria2c -x16 -s16 -k1m \
             https://github.com/rnicro/librewolf/releases/download/159.0-r4/librewolf-159.0_4.x86_64-musl.xbps
-
-        sudo xbps-install -R . librewolf*
-        rm -f librewolf*
     fi
 
 else
