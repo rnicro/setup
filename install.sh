@@ -17,12 +17,10 @@ sudo xbps-reconfigure -fa
 
 echo "Installing base packages"
 sudo xbps-install -Sy \
-    foot tofi pipewire wireplumber brightnessctl vim \
-    zathura-pdf-mupdf yazi wlsunset elogind grim \
-    libspa-bluetooth bluez polkit aria2 \
-    mesa-dri mesa-vulkan-intel vulkan-loader \
-    intel-media-driver tlp wlroots0.20-devel \
-    make pkg-config gcc
+    foot tofi pipewire wireplumber brightnessctl vim zathura-pdf-mupdf yazi \
+    wlsunset elogind grim libspa-bluetooth bluez polkit aria2 mesa-dri \
+    mesa-vulkan-intel vulkan-loader intel-media-driver tlp wlroots0.20-devel \
+    make pkg-config gcc noto-fonts-tff
 
 cd "$HOME"
 
