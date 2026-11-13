@@ -13,7 +13,7 @@ fi
 echo "Adding the nonfree repository and installing Intel microcode"
 sudo xbps-install -Sy void-repo-nonfree
 sudo xbps-install -Sy intel-ucode
-sudo xbps-reconfigure -fa
+sudo xbps-reconfigure -f "linux$(uname -r | cut -d. -f1-2)"
 
 echo "Installing base packages"
 sudo xbps-install -Sy \
@@ -132,6 +132,9 @@ echo "Enabling selected services"
 sudo ln -sfn /etc/sv/tlp /var/service/tlp
 sudo ln -sfn /etc/sv/dbus /var/service/dbus
 sudo ln -sfn /etc/sv/elogind /var/service/elogind
+
+sudo ln -sfn /etc/sv/bluetoothd /var/service/bluetoothd
+sudo sv down bluetoothd
 
 echo "Removing unused services"
 sudo rm -f /var/service/agetty-tty[3-6]
