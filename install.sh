@@ -27,6 +27,9 @@ cd "$HOME"
 echo "Creating user directories"
 mkdir -p .config/tofi .config/foot .config/velotype
 mkdir -p Downloads Notes Pictures
+mkdir -p ~/.config/pipewire/pipewire.conf.d
+ln -sf /usr/share/examples/wireplumber/10-wireplumber.conf ~/.config/pipewire/pipewire.conf.d/
+ln -sf /usr/share/examples/pipewire/20-pipewire-pulse.conf ~/.config/pipewire/pipewire.conf.d/
 
 rnicro=https://github.com/rnicro/setup/raw/refs/heads/main
 
