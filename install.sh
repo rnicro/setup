@@ -68,22 +68,17 @@ if ldd --version 2>&1 | grep -qi musl; then
 
 #else
 #
-#    echo "glibc detected; preparing xdeb"
+#    echo "glibc detected"
 #    sudo xbps-install -Sy binutils curl xz
 #
 #    mkdir -p xdeb
 #    aria2c https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb -d xdeb/
 #    chmod +x xdeb/xdeb
 #
-#    printf 'Install browser? [y/N] '
-#    IFS= read -r browser
+#    printf 'Which browser (brave/helium)? '
+#    IFS= read -r browser_choice
 #
-#    if [ "$browser" = y ]; then
-#
-#        printf 'Which browser (brave/helium)? '
-#        IFS= read -r browser_choice
-#
-#        if [ "$browser_choice" = brave ]; then
+#    if [ "$browser_choice" = brave ]; then
 #
 #            printf 'Brave version: '
 #            IFS= read -r ver_brave
@@ -125,11 +120,11 @@ sudo update-grub
 echo "Writing the post-install checklist"
 printf '%s\n' \
     "download a browser" \
-    "download velotype + kernel, and gpu drivers if i bothered to optimize" \
+#    "download velotype + kernel, and gpu drivers if i bothered to optimize" \
     "change /etc/fstab" \
-    "remove unnecessary services /var/service" \
-    "may remove void-repo-nonfree, but can't get updates" \
-    'change theme>body+interface font to "Noto Sans" in velotype and code to monospace' \
+#    "remove unnecessary services /var/service" \
+#    "may remove void-repo-nonfree, but can't get updates" \
+#    'change theme>body+interface font to "Noto Sans" in velotype and code to monospace' \
     "remove todo after setup" > todo
 
 echo "Setup complete. Review ~/todo for remaining tasks."
