@@ -4,23 +4,19 @@ set -e
 
 #commented lines mean they are under-development
 
-echo "Checking user privileges"
 if [ "$(id -u)" -eq 0 ]; then
     echo "Do not run this script as root."
     exit 1
 fi
 
-echo "Adding the nonfree repository and installing Intel microcode"
+echo "Installing base packages"
 sudo xbps-install -Sy void-repo-nonfree
 sudo xbps-install -Sy intel-ucode
 sudo xbps-reconfigure -f "linux$(uname -r | cut -d. -f1-2)"
-
-echo "Installing base packages"
-sudo xbps-install -Sy \
-    foot tofi pipewire wireplumber brightnessctl vim zathura-pdf-mupdf yazi \
-    wlsunset elogind grim libspa-bluetooth bluez polkit aria2 mesa-dri \
-    mesa-vulkan-intel vulkan-loader intel-media-driver tlp wlroots0.20-devel \
-    make pkg-config gcc noto-fonts-ttf
+sudo xbps-install -Sy foot tofi pipewire wireplumber brightnessctl vim \
+    zathura-pdf-mupdf yazi wlsunset elogind grim libspa-bluetooth bluez \
+    polkit aria2 mesa-dri mesa-vulkan-intel vulkan-loader intel-media-driver \
+    tlp wlroots0.20-devel make pkg-config gcc noto-fonts-ttf
 
 cd "$HOME"
 
@@ -47,11 +43,9 @@ aria2c --allow-overwrite=true "$rnicro/.bashrc"
 chmod +x .config/tofi/tofi-status.sh
 chmod +x start-dwl.sh
 
-echo "Extracting dwl source"
+echo "Extracting and configuring dwl"
 tar xf dwl.tar
 rm dwl.tar
-
-echo "Configuring dwl"
 cd dwl
 rm -f config.h
 make clean
@@ -60,7 +54,7 @@ sudo make install
 
 cd "$HOME"
 
-echo "Configuring optional software"
+echo "Downloading optional software"
 if ldd --version 2>&1 | grep -qi musl; then
 
     echo "musl detected"
@@ -113,9 +107,6 @@ echo "Enabling selected services"
 sudo ln -sfn /etc/sv/tlp /var/service/tlp
 sudo ln -sfn /etc/sv/dbus /var/service/dbus
 sudo ln -sfn /etc/sv/elogind /var/service/elogind
-
-sudo ln -sfn /etc/sv/bluetoothd /var/service/bluetoothd
-sudo sv down bluetoothd
 
 echo "Removing unused services"
 sudo rm -f /var/service/agetty-tty[3-6]
