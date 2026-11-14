@@ -108,6 +108,8 @@ sudo ln -sfn /etc/sv/tlp /var/service/tlp
 sudo ln -sfn /etc/sv/dbus /var/service/dbus
 sudo ln -sfn /etc/sv/elogind /var/service/elogind
 
+sudo usermod -aG bluetooth $USER
+
 echo "Removing unused services"
 sudo rm -f /var/service/agetty-tty[3-6]
 
