@@ -1,2 +1,2 @@
-[ "$(tty)" = "/dev/tty1" ] && exec start-dwl.sh
+[ "$(tty)" = "/dev/tty1" ] && exec $HOME/start-dwl.sh
 [ -f .bashrc ] && . .bashrc
