@@ -1,6 +1,6 @@
 # void linux setup
 
-personal setup script for void linux (glibc/musl).
+personal setup script for void linux.
 
 meant to be used on a fresh installation, with my own preferences, packages, dotfiles and system configuration.
 
@@ -20,6 +20,6 @@ chmod +x install.sh
 ./install.sh
 ```
 
-some files like `.bashrc` and `.bash_profile` are overwritten.
+some files like `.bashrc`, `.bash_profile` and `grub` are overwritten.
 
 this is my personal setup, not meant for general usage.
