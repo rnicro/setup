@@ -56,7 +56,7 @@ echo "Downloading optional software"
 if ldd --version 2>&1 | grep -qi musl; then
 
     echo "musl detected"
-    echo "Downloading the custom Linux kernel"
+    echo "Downloading Linux kernel"
     $aria https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps
     $aria https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps
     echo "Downloading Velotype"
@@ -81,6 +81,7 @@ echo "Enabling selected services"
 sudo ln -sfn /etc/sv/tlp /var/service/tlp
 sudo ln -sfn /etc/sv/dbus /var/service/dbus
 sudo ln -sfn /etc/sv/elogind /var/service/elogind
+sudo ln -sfn /etc/sv/bluetoothd /var/service
 
 sudo usermod -aG bluetooth $USER
 
