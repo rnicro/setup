@@ -79,24 +79,23 @@ fi
 cd "$HOME"
 
 echo "Enabling selected services"
-sudo ln -sfn /etc/sv/tlp /var/service/tlp
-sudo ln -sfn /etc/sv/dbus /var/service/dbus
-sudo ln -sfn /etc/sv/elogind /var/service/elogind
-sudo ln -sfn /etc/sv/bluetoothd /var/service
+sudo ln -s /etc/sv/tlp /var/service/tlp
+sudo ln -s /etc/sv/dbus /var/service/dbus
+sudo ln -s /etc/sv/elogind /var/service/elogind
+sudo ln -s /etc/sv/bluetoothd /var/service
 
 sudo usermod -aG bluetooth $USER
 
 echo "Removing unused services"
-sudo rm -f /var/service/agetty-tty[3-6]
+cd /var/service
+sudo rm -f agetty-tty3
+sudo rm -f agetty-tty4
+sudo rm -f agetty-tty5
+sudo rm -f agetty-tty6
+
+cd $HOME
 
 echo "Writing the post-install checklist"
-printf '%s\n' \
-    "download a browser" \
-    "download velotype + kernel, and gpu drivers if i bothered to optimize" \
-    "change /etc/fstab" \
-    "remove unnecessary services /var/service" \
-    "may remove void-repo-nonfree, but can't get updates" \
-    'change theme>body+interface font to "Noto Sans" in velotype and code to monospace' \
-    "remove todo after setup" > todo
+$aria "$rnicro/todo"
 
 echo "Setup complete. Review ~/todo for remaining tasks."
