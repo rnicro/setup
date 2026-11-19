@@ -30,7 +30,6 @@ echo "Downloading configuration files and dotfiles"
 $aria "$rnicro/config" -d .config/tofi
 $aria "$rnicro/tofi-status.sh" -d .config/tofi
 $aria "$rnicro/foot.ini" -d .config/foot
-$aria "$rnicro/.history" -d .config/velotype
 $aria --allow-overwrite=true "$rnicro/config.toml" -d .config/velotype
 sudo $aria "$rnicro/grub" -d /etc/default
 sudo update-grub
