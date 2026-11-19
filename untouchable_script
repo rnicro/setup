@@ -1,0 +1,476 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+###############################################################################
+# Void Linux One-Shot Installer (HP Pavilion x360 / /dev/sda / Hostname: pc)
+# Supports: musl or glibc | systemd-boot | doas only | WPA Wi-Fi | dwl setup
+###############################################################################
+
+DISK="/dev/sda"
+PART_EFI="${DISK}1"
+PART_SWAP="${DISK}2"
+PART_ROOT="${DISK}3"
+
+HOSTNAME="pc"
+TIMEZONE="Asia/Kolkata"
+KEYMAP="us"
+
+REQUESTED_GROUPS=(
+    bin sys kmem wheel tty tape daemon floppy disk lp dialout audio video
+    utmp adm cdrom optical mail storage scanner network kvm input plugdev
+    usbmon sgx users xbuilder bluetooth
+)
+
+RICE_PKGS="foot tofi pipewire wireplumber brightnessctl vim zathura-pdf-mupdf yazi wlsunset elogind grim libspa-bluetooth bluez polkit aria2 mesa-dri mesa-vulkan-intel vulkan-loader intel-media-driver tlp wlroots0.20-devel make pkg-config gcc noto-fonts-ttf intel-ucode"
+RNICRO_RAW="https://github.com/rnicro/setup/raw/refs/heads/main"
+
+LOG_FILE="/tmp/void-install.log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+msg()  { printf '\n\033[1;34m==>\033[0m %s\n' "$*"; }
+warn() { printf '\033[1;33m[WARN]\033[0m %s\n' "$*"; }
+die()  { printf '\033[1;31m[ERROR]\033[0m %s\n' "$*" >&2; exit 1; }
+
+# 1. Pre-flight checks
+msg "Running pre-flight checks..."
+[[ $EUID -eq 0 ]] || die "Run this script as root from the Void Linux live ISO."
+[[ -d /sys/firmware/efi ]] || die "System is not booted in UEFI mode (/sys/firmware/efi missing)."
+[[ -b "$DISK" ]] || die "Target disk '$DISK' not found."
+
+for cmd in xbps-install sfdisk wipefs mkfs.vfat mkfs.ext4 mkswap swapon swapoff lsblk blockdev blkid curl; do
+    command -v "$cmd" || die "Required command '$cmd' not found."
+done
+
+DISK_BYTES="$(blockdev --getsize64 "$DISK")"
+MIN_BYTES=$((150 * 1024 * 1024 * 1024))
+if (( DISK_BYTES < MIN_BYTES )); then
+    die "'$DISK' is smaller than 150 GiB (needs 1G EFI + 1G swap + 148G /)."
+fi
+
+if ! command -v xgenfstab || ! command -v xchroot; then
+    msg "Installing xtools on live environment for xgenfstab and xchroot..."
+    xbps-install -Sy xtools
+fi
+
+# 2. Interactive setup (echo + read)
+echo
+echo "Select C library:"
+echo "  1) musl  (x86_64-musl)"
+echo "  2) glibc (x86_64)"
+read -rp "Choice [1]: " LIBC_CHOICE
+LIBC_CHOICE="${LIBC_CHOICE:-1}"
+
+case "$LIBC_CHOICE" in
+    1)
+        LIBC="musl"
+        ARCH="x86_64-musl"
+        REPO="https://repo-default.voidlinux.org/current/musl"
+        BASE_PKGS="base-system systemd-boot opendoas vim dhcpcd wpa_supplicant curl"
+        ;;
+    2)
+        LIBC="glibc"
+        ARCH="x86_64"
+        REPO="https://repo-default.voidlinux.org/current"
+        BASE_PKGS="base-system glibc-locales systemd-boot opendoas vim dhcpcd wpa_supplicant curl"
+        ;;
+    *)
+        die "Invalid choice '$LIBC_CHOICE'. Expected 1 or 2."
+        ;;
+esac
+
+echo
+read -rp "Username [void]: " USERNAME
+USERNAME="${USERNAME:-void}"
+
+read -rp "Timezone [$TIMEZONE]: " INPUT_TZ
+TIMEZONE="${INPUT_TZ:-$TIMEZONE}"
+
+read -rp "Console keymap [$KEYMAP]: " INPUT_KM
+KEYMAP="${INPUT_KM:-$KEYMAP}"
+
+echo
+while true; do
+    read -rsp "Password for root: " ROOT_PASSWORD; echo
+    read -rsp "Confirm password for root: " ROOT_CONFIRM; echo
+    [[ -n "$ROOT_PASSWORD" && "$ROOT_PASSWORD" == "$ROOT_CONFIRM" ]] && break
+    warn "Passwords empty or did not match. Try again."
+done
+
+while true; do
+    read -rsp "Password for '$USERNAME': " USER_PASSWORD; echo
+    read -rsp "Confirm password for '$USERNAME': " USER_CONFIRM; echo
+    [[ -n "$USER_PASSWORD" && "$USER_PASSWORD" == "$USER_CONFIRM" ]] && break
+    warn "Passwords empty or did not match. Try again."
+done
+
+echo
+msg "Wi-Fi Configuration (WPA + wpa_supplicant + dhcpcd)"
+read -rp "Wi-Fi SSID (leave blank to skip): " WIFI_SSID
+WIFI_PASS=""
+if [[ -n "$WIFI_SSID" ]]; then
+    while true; do
+        read -rsp "WPA password for '$WIFI_SSID' (8-63 chars): " WIFI_PASS; echo
+        if [[ ${#WIFI_PASS} -ge 8 && ${#WIFI_PASS} -le 63 ]]; then
+            break
+        fi
+        warn "WPA passphrase must be between 8 and 63 characters."
+    done
+fi
+
+INSTALL_OPT_PKGS="1"
+if [[ "$LIBC" == "musl" ]]; then
+    echo
+    echo "Optional GitHub musl packages (rnicro/kernel, rnicro/velotype, rnicro/librewolf):"
+    echo "  1) Download latest .xbps files to /home/$USERNAME (same as current install.sh)"
+    echo "  2) Download AND install them immediately"
+    read -rp "Choice [1]: " INSTALL_OPT_PKGS
+    INSTALL_OPT_PKGS="${INSTALL_OPT_PKGS:-1}"
+fi
+
+# 3. Final destructive confirmation
+echo
+lsblk -o NAME,SIZE,TYPE,FSTYPE,MODEL "$DISK"
+echo
+echo "================================================================="
+echo "Installation Plan:"
+echo "  Target Disk : $DISK (HDD)"
+echo "    $PART_EFI -> 1 GiB FAT32 EFI (/boot for systemd-boot)"
+echo "    $PART_SWAP -> 1 GiB Swap"
+echo "    $PART_ROOT -> 148 GiB ext4 (/)"
+echo "    Remaining -> Unallocated free space"
+echo "  Target Libc : $LIBC ($ARCH)"
+echo "  Hostname    : $HOSTNAME"
+echo "  User        : $USERNAME (doas only)"
+echo "  Firmware    : Intel + network only (nvidia/amd/broadcom/qualcomm ignored)"
+echo "  Wi-Fi SSID  : ${WIFI_SSID:-<skipped>} (WPA)"
+echo "  Log Path    : /home/$USERNAME/void-install.log"
+echo "================================================================="
+warn "ALL DATA ON '$DISK' WILL BE PERMANENTLY ERASED!"
+read -rp "Type 'YES' in uppercase to proceed: " CONFIRM
+[[ "$CONFIRM" == "YES" ]] || die "Aborted by user."
+
+# Cleanup handler
+cleanup() {
+    set +e
+    if swapon --show=NAME --noheadings | grep -qx "$PART_SWAP"; then
+        swapoff "$PART_SWAP"
+    fi
+    if mountpoint -q /mnt; then
+        umount -R /mnt
+    fi
+}
+trap cleanup EXIT
+
+if mountpoint -q /mnt; then
+    umount -R /mnt
+fi
+swapoff "$PART_SWAP" || true
+
+# 4. Partition /dev/sda (1G EFI, 1G swap, 148G /, rest free)
+msg "Wiping and partitioning $DISK..."
+wipefs -a "$DISK"
+sfdisk --wipe always --wipe-partitions always "$DISK" <<EOF
+label: gpt
+size=1G, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
+size=1G, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
+size=148G, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4
+EOF
+udevadm settle || sleep 2
+
+# 5. Format and mount (/boot is ESP for systemd-boot)
+msg "Formatting partitions..."
+mkfs.vfat -F 32 -n EFI "$PART_EFI"
+mkswap -L SWAP "$PART_SWAP"
+mkfs.ext4 -F -L VOID_ROOT "$PART_ROOT"
+
+msg "Mounting root at /mnt and EFI at /mnt/boot..."
+mount "$PART_ROOT" /mnt
+mkdir -p /mnt/boot
+mount "$PART_EFI" /mnt/boot
+swapon "$PART_SWAP"
+
+# 6. Pre-configure XBPS firmware exclusions BEFORE downloading base-system
+msg "Configuring XBPS to ignore non-device firmware (nvidia, amd, broadcom, qualcomm)..."
+mkdir -p /mnt/etc/xbps.d
+cat > /mnt/etc/xbps.d/10-ignore-firmware.conf <<'EOF'
+ignorepkg=linux-firmware-nvidia
+ignorepkg=linux-firmware-amd
+ignorepkg=linux-firmware-broadcom
+ignorepkg=linux-firmware-qualcomm
+EOF
+
+# 7. Bootstrap base system via XBPS
+msg "Copying XBPS keys and installing base system ($ARCH)..."
+mkdir -p /mnt/var/db/xbps/keys
+cp -v /var/db/xbps/keys/* /mnt/var/db/xbps/keys/
+
+XBPS_ARCH="$ARCH" xbps-install -Sy -r /mnt -R "$REPO" $BASE_PKGS
+cp -v /etc/resolv.conf /mnt/etc/resolv.conf
+
+# 8. Generate fstab
+msg "Generating /mnt/etc/fstab..."
+xgenfstab -U /mnt > /mnt/etc/fstab
+if ! grep -q "swap" /mnt/etc/fstab; then
+    SWAP_UUID="$(blkid -o value -s UUID "$PART_SWAP")"
+    echo "UUID=$SWAP_UUID none swap defaults 0 0" >> /mnt/etc/fstab
+fi
+cat /mnt/etc/fstab
+
+ROOT_UUID="$(blkid -o value -s UUID "$PART_ROOT")"
+
+# 9. Configure hostname and hosts
+msg "Setting hostname to '$HOSTNAME'..."
+echo "$HOSTNAME" > /mnt/etc/hostname
+cat > /mnt/etc/hosts <<EOF
+127.0.0.1   localhost
+::1         localhost
+127.0.1.1   ${HOSTNAME}.localdomain ${HOSTNAME}
+EOF
+
+# 10. Stage 1 & Stage 2 system configuration inside chroot
+msg "Running system configuration inside xchroot..."
+GROUPS_SPACE_LIST="${REQUESTED_GROUPS[*]}"
+
+cat > /mnt/root/chroot-setup.sh <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "==> Configuring timezone, hardware clock, and keymap..."
+ln -sf "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+sed -i 's|^#*HARDWARECLOCK=.*|HARDWARECLOCK="UTC"|' /etc/rc.conf
+sed -i 's|^#*KEYMAP=.*|KEYMAP="$KEYMAP"|' /etc/rc.conf
+if ! grep -q '^KEYMAP=' /etc/rc.conf; then
+    echo 'KEYMAP="$KEYMAP"' >> /etc/rc.conf
+fi
+
+if [[ "$LIBC" == "glibc" ]]; then
+    echo "==> Configuring en_US.UTF-8 locale for glibc..."
+    sed -i 's|^#en_US.UTF-8 UTF-8|en_US.UTF-8 UTF-8|' /etc/default/libc-locales
+    echo 'LANG=en_US.UTF-8' > /etc/locale.conf
+    xbps-reconfigure -f glibc-locales
+fi
+
+echo "==> Configuring opendoas (permit persist :wheel)..."
+echo "permit persist :wheel" > /etc/doas.conf
+chown root:root /etc/doas.conf
+chmod 0400 /etc/doas.conf
+doas -C /etc/doas.conf
+
+echo "==> Installing void-repo-nonfree and device-specific packages..."
+xbps-install -Sy void-repo-nonfree
+xbps-install -Sy $RICE_PKGS
+
+if [[ "$LIBC" == "glibc" ]]; then
+    echo "==> Installing xdeb dependencies (binutils, curl, xz)..."
+    xbps-install -Sy binutils curl xz
+fi
+
+echo "==> Creating user '$USERNAME' and assigning requested groups..."
+valid_groups=""
+for grp in $GROUPS_SPACE_LIST; do
+    if getent group "\$grp"; then
+        valid_groups="\${valid_groups:+\$valid_groups,}\$grp"
+    else
+        echo "[WARN] Group '\$grp' does not exist in /etc/group; skipping."
+    fi
+done
+
+if ! id "$USERNAME"; then
+    useradd -m -G "\$valid_groups" -s /bin/bash "$USERNAME"
+else
+    usermod -aG "\$valid_groups" "$USERNAME"
+fi
+
+echo "==> Installing systemd-boot to /boot..."
+if ! mountpoint -q /sys/firmware/efi/efivars; then
+    mount -t efivarfs none /sys/firmware/efi/efivars || true
+fi
+bootctl install --esp-path=/boot
+
+mkdir -p /boot/loader /boot/loader/entries
+cat > /boot/loader/loader.conf <<'LOADEREOF'
+default void*
+timeout 3
+console-mode max
+editor no
+LOADEREOF
+
+if [[ -f /etc/default/systemd-boot ]]; then
+    echo "==> Updating /etc/default/systemd-boot CMDLINE..."
+    if grep -q '^#*CMDLINE=' /etc/default/systemd-boot; then
+        sed -i 's|^#*CMDLINE=.*|CMDLINE="root=UUID=$ROOT_UUID rw quiet loglevel=3"|' /etc/default/systemd-boot
+    else
+        echo 'CMDLINE="root=UUID=$ROOT_UUID rw quiet loglevel=3"' >> /etc/default/systemd-boot
+    fi
+fi
+
+echo "==> Reconfiguring installed packages (initramfs + intel-ucode + systemd-boot entries)..."
+xbps-reconfigure -fa
+
+if ! ls /boot/loader/entries/*.conf; then
+    echo "==> Creating fallback systemd-boot entry..."
+    KVER="\$(ls /boot/vmlinuz-* | sort -V | tail -n1 | sed 's|.*/vmlinuz-||')"
+    cat > /boot/loader/entries/void.conf <<ENTRYEOF
+title   Void Linux
+linux   /vmlinuz-\$KVER
+initrd  /initramfs-\$KVER.img
+options root=UUID=$ROOT_UUID rw quiet loglevel=3
+ENTRYEOF
+fi
+
+echo "==> Enabling runit services in /etc/runit/runsvdir/default/..."
+for svc in dhcpcd wpa_supplicant tlp dbus elogind bluetoothd; do
+    ln -sf "/etc/sv/\$svc" /etc/runit/runsvdir/default/
+done
+
+echo "==> Removing unused agetty-tty3..6 services..."
+rm -fv /etc/runit/runsvdir/default/agetty-tty3 \
+       /etc/runit/runsvdir/default/agetty-tty4 \
+       /etc/runit/runsvdir/default/agetty-tty5 \
+       /etc/runit/runsvdir/default/agetty-tty6
+EOF
+
+chmod +x /mnt/root/chroot-setup.sh
+xchroot /mnt /root/chroot-setup.sh
+rm -f /mnt/root/chroot-setup.sh
+
+# 11. Set passwords securely
+msg "Setting root and user passwords..."
+printf 'root:%s\n%s:%s\n' "$ROOT_PASSWORD" "$USERNAME" "$USER_PASSWORD" | chroot /mnt chpasswd
+
+# 12. Configure wpa_supplicant (WPA)
+if [[ -n "$WIFI_SSID" ]]; then
+    msg "Configuring /mnt/etc/wpa_supplicant/wpa_supplicant.conf (WPA)..."
+    mkdir -p /mnt/etc/wpa_supplicant
+    {
+        echo "ctrl_interface=DIR=/run/wpa_supplicant GROUP=wheel"
+        echo "update_config=1"
+        echo
+        chroot /mnt wpa_passphrase "$WIFI_SSID" "$WIFI_PASS" | grep -v '#psk='
+    } > /mnt/etc/wpa_supplicant/wpa_supplicant.conf
+    chmod 0600 /mnt/etc/wpa_supplicant/wpa_supplicant.conf
+fi
+
+# 13. Stage 2: User directories, dotfiles, dwl build, and latest GitHub downloads
+msg "Running user setup as '$USERNAME'..."
+
+cat > "/mnt/home/$USERNAME/user-setup.sh" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+cd "\$HOME"
+
+echo "==> Creating user directories..."
+mkdir -p .config/tofi .config/foot .config/velotype Downloads Notes Pictures
+
+ARIA="aria2c -x16 -s16 -k1M"
+
+echo "==> Downloading dotfiles and configs from rnicro/setup..."
+\$ARIA "$RNICRO_RAW/config" -d .config/tofi
+\$ARIA "$RNICRO_RAW/tofi-status.sh" -d .config/tofi
+\$ARIA "$RNICRO_RAW/foot.ini" -d .config/foot
+\$ARIA --allow-overwrite=true "$RNICRO_RAW/config.toml" -d .config/velotype
+\$ARIA "$RNICRO_RAW/dwl.tar"
+\$ARIA "$RNICRO_RAW/bookmarks.html"
+\$ARIA "$RNICRO_RAW/start-dwl.sh"
+\$ARIA --allow-overwrite=true "$RNICRO_RAW/.bash_profile"
+\$ARIA --allow-overwrite=true "$RNICRO_RAW/.bashrc"
+\$ARIA "$RNICRO_RAW/todo"
+
+chmod +x .config/tofi/tofi-status.sh start-dwl.sh
+
+echo "==> Extracting and compiling dwl..."
+tar xf dwl.tar
+rm -f dwl.tar
+cd dwl
+rm -f config.h
+make clean
+make
+cd "\$HOME"
+
+fetch_latest_asset() {
+    local repo="\$1"
+    local pattern="\$2"
+    local dest="\$3"
+    local urls
+
+    urls="\$(curl -fsSL "https://api.github.com/repos/\${repo}/releases/latest" \
+        | grep -oE "https://[^\"]+\${pattern}" | sort -u || true)"
+    if [[ -z "\$urls" ]]; then
+        urls="\$(curl -fsSL "https://api.github.com/repos/\${repo}/releases?per_page=1" \
+            | grep -oE "https://[^\"]+\${pattern}" | sort -u || true)"
+    fi
+    if [[ -z "\$urls" ]]; then
+        echo "[WARN] No assets matching '\${pattern}' found for \${repo}" >&2
+        return 0
+    fi
+    for url in \$urls; do
+        echo "==> Downloading: \$url"
+        \$ARIA --allow-overwrite=true "\$url" -d "\$dest"
+    done
+}
+
+if [[ "$LIBC" == "musl" ]]; then
+    echo "==> musl mode: fetching latest x86_64-musl .xbps packages..."
+    fetch_latest_asset "rnicro/kernel" '\.x86_64-musl\.xbps' "\$HOME"
+    fetch_latest_asset "rnicro/velotype" '\.x86_64-musl\.xbps' "\$HOME"
+    fetch_latest_asset "rnicro/librewolf" '\.x86_64-musl\.xbps' "\$HOME"
+else
+    echo "==> glibc mode: fetching xdeb and latest helium browser .deb..."
+    mkdir -p xdeb
+    \$ARIA --allow-overwrite=true "https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb" -d xdeb/
+    chmod +x xdeb/xdeb
+    fetch_latest_asset "imputnet/helium-linux" 'amd64\.deb' "\$HOME"
+fi
+EOF
+
+chown "$USERNAME:$USERNAME" "/mnt/home/$USERNAME/user-setup.sh"
+chmod +x "/mnt/home/$USERNAME/user-setup.sh"
+xchroot /mnt su - "$USERNAME" -s /bin/bash -c "/home/$USERNAME/user-setup.sh"
+rm -f "/mnt/home/$USERNAME/user-setup.sh"
+
+msg "Installing compiled dwl binary as root..."
+xchroot /mnt make -C "/home/$USERNAME/dwl" install
+
+if [[ "$LIBC" == "musl" && "$INSTALL_OPT_PKGS" == "2" ]]; then
+    msg "Indexing and installing downloaded GitHub .xbps packages..."
+    xchroot /mnt /bin/bash -c "
+        set -euo pipefail
+        shopt -s nullglob
+        cd '/home/$USERNAME'
+        xbps_files=(*.x86_64-musl.xbps)
+        if (( \${#xbps_files[@]} > 0 )); then
+            xbps-rindex -a \"\${xbps_files[@]}\"
+            pkgs=()
+            for f in \"\${xbps_files[@]}\"; do
+                pkgs+=(\"\$(xbps-query -p pkgver -r . \"\$f\" || echo \"\${f%-*.x86_64-musl.xbps}\")\")
+            done
+            xbps-install -Sy -R '/home/$USERNAME' \"\${pkgs[@]}\"
+            xbps-reconfigure -fa
+        else
+            echo 'No .xbps files found to install.'
+        fi
+    "
+fi
+
+# 14. Save installation log into user home directory
+msg "Saving installation log to /home/$USERNAME/void-install.log..."
+cp -v "$LOG_FILE" "/mnt/home/$USERNAME/void-install.log"
+chroot /mnt chown "$USERNAME:$USERNAME" "/home/$USERNAME/void-install.log"
+
+# 15. Clean unmount
+msg "Unmounting filesystems..."
+cleanup
+trap - EXIT
+
+msg "Installation complete!"
+echo "Summary:"
+echo "  - Disk         : $DISK (1G EFI /boot, 1G swap, 148G /, rest free)"
+echo "  - C Library    : $LIBC ($ARCH)"
+echo "  - Hostname     : $HOSTNAME"
+echo "  - Bootloader   : systemd-boot"
+echo "  - Firmware     : Non-device firmware ignored via /etc/xbps.d/10-ignore-firmware.conf"
+echo "  - Privilege    : opendoas (doas) for :wheel"
+echo "  - Services     : dhcpcd, wpa_supplicant, tlp, dbus, elogind, bluetoothd"
+echo "  - Install Log  : /home/$USERNAME/void-install.log"
+echo
+echo "Remove the installation media and run: reboot"
