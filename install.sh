@@ -7,8 +7,6 @@ if [ "$(id -u)" -eq 0 ]; then
     exit 1
 fi
 
-nul="> /dev/null"
-
 echo "Installing base packages"
 sudo xbps-install -Sy void-repo-nonfree
 sudo xbps-install -Sy foot tofi pipewire wireplumber brightnessctl vim zathura-pdf-mupdf yazi wlsunset elogind \
