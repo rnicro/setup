@@ -28,8 +28,6 @@ $aria "$rnicro/config" -d .config/tofi
 $aria "$rnicro/tofi-status.sh" -d .config/tofi
 $aria "$rnicro/foot.ini" -d .config/foot
 $aria --allow-overwrite=true "$rnicro/config.toml" -d .config/velotype
-sudo $aria "$rnicro/grub" -d /etc/default
-sudo update-grub
 $aria "$rnicro/dwl.tar"
 $aria "$rnicro/bookmarks.html"
 $aria "$rnicro/start-dwl.sh"
