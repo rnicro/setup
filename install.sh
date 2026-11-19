@@ -12,6 +12,7 @@ sudo xbps-install -Sy void-repo-nonfree
 sudo xbps-install -Sy foot tofi pipewire wireplumber brightnessctl vim zathura-pdf-mupdf yazi wlsunset elogind \
     grim libspa-bluetooth bluez polkit aria2 mesa-dri mesa-vulkan-intel vulkan-loader intel-media-driver tlp wlroots0.20-devel \
     make pkg-config gcc noto-fonts-ttf intel-ucode
+
 sudo xbps-reconfigure -f "linux$(uname -r | cut -d. -f1-2)"
 
 cd "$HOME"
@@ -20,25 +21,34 @@ echo "Creating user directories"
 mkdir -p .config/tofi .config/foot .config/velotype
 mkdir -p Downloads Notes Pictures
 
-rnicro=https://github.com/rnicro/setup/raw/refs/heads/main
-aria="aria2c -x16 -s16 -k1M"
+rnicro=https://github.com/rnicro/setup/raw/refs/heads/main/HOME
+
+download() {
+    aria2c -x16 -s16 -k1M --allow-overwrite=true "$1" -d "$2"
+}
 
 echo "Downloading configuration files and dotfiles"
-$aria "$rnicro/config" -d .config/tofi
-$aria "$rnicro/tofi-status.sh" -d .config/tofi
-$aria "$rnicro/foot.ini" -d .config/foot
-$aria --allow-overwrite=true "$rnicro/config.toml" -d .config/velotype
-$aria "$rnicro/dwl.tar"
-$aria "$rnicro/bookmarks.html"
-$aria "$rnicro/start-dwl.sh"
-$aria --allow-overwrite=true "$rnicro/.bash_profile"
-$aria --allow-overwrite=true "$rnicro/.bashrc"
+
+download "$rnicro/.bash_profile" "$HOME"
+download "$rnicro/.bashrc" "$HOME"
+
+download "$rnicro/.config/foot/foot.ini" "$HOME/.config/foot"
+download "$rnicro/.config/tofi/config" "$HOME/.config/tofi"
+download "$rnicro/.config/tofi/tofi-status.sh" "$HOME/.config/tofi"
+download "$rnicro/.config/velotype/config.toml" "$HOME/.config/velotype"
+
+download "$rnicro/start-dwl.sh" "$HOME"
+download "$rnicro/bookmark.html" "$HOME"
+download "$rnicro/todo" "$HOME"
+download "$rnicro/dwl.tar" "$HOME"
+
 chmod +x .config/tofi/tofi-status.sh
 chmod +x start-dwl.sh
 
 echo "Extracting and configuring dwl"
 tar xf dwl.tar
 rm dwl.tar
+
 cd dwl
 rm -f config.h
 make clean
@@ -48,48 +58,57 @@ sudo make install
 cd "$HOME"
 
 echo "Downloading optional software"
+
 if ldd --version 2>&1 | grep -qi musl; then
 
     echo "musl detected"
+
     echo "Downloading Linux kernel"
-    $aria https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps
-    $aria https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps
+    download https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps "$HOME"
+    download https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps "$HOME"
+
     echo "Downloading Velotype"
-    $aria https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps
+    download https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps "$HOME"
+
     echo "Downloading LibreWolf"
-    $aria https://github.com/rnicro/librewolf/releases/download/160.0-r1/librewolf-160.0_1.x86_64-musl.xbps
+    download https://github.com/rnicro/librewolf/releases/download/160.0-r1/librewolf-160.0_1.x86_64-musl.xbps "$HOME"
 
 else
+
     echo "glibc detected"
+
     sudo xbps-install -Sy binutils curl xz
+
     mkdir -p xdeb
-    $aria https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb -d xdeb/
+
+    download https://github.com/xdeb-org/xdeb/raw/refs/heads/master/xdeb "$HOME/xdeb"
     chmod +x xdeb/xdeb
 
     echo "Downloading helium browser"
-    $aria https://github.com/imputnet/helium-linux/releases/download/0.22.0.1/helium-bin_0.22.0.1-1_amd64.deb
+    download https://github.com/imputnet/helium-linux/releases/download/0.22.0.1/helium-bin_0.22.0.1-1_amd64.deb "$HOME"
+
 fi
 
 cd "$HOME"
 
 echo "Enabling selected services"
+
 sudo ln -s /etc/sv/tlp /var/service/tlp
 sudo ln -s /etc/sv/dbus /var/service/dbus
 sudo ln -s /etc/sv/elogind /var/service/elogind
 sudo ln -s /etc/sv/bluetoothd /var/service
 
-sudo usermod -aG bluetooth $USER
+sudo usermod -aG bluetooth "$USER"
 
 echo "Removing unused services"
+
 cd /var/service
+
 sudo rm -f agetty-tty3
 sudo rm -f agetty-tty4
 sudo rm -f agetty-tty5
 sudo rm -f agetty-tty6
 
-cd $HOME
-
-echo "Writing the post-install checklist"
-$aria "$rnicro/todo"
+cd "$HOME"
 
 echo "Setup complete. Review ~/todo for remaining tasks."
