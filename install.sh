@@ -2,8 +2,6 @@
 
 set -e
 
-#commented lines mean they are under-development
-
 if [ "$(id -u)" -eq 0 ]; then
     echo "Do not run this script as root."
     exit 1
@@ -33,6 +31,9 @@ $aria "$rnicro/tofi-status.sh" -d .config/tofi
 $aria "$rnicro/foot.ini" -d .config/foot
 $aria "$rnicro/.history" -d .config/velotype
 $aria "$rnicro/config.toml" -d .config/velotype
+sudo rm -f /etc/default/grub
+sudo $aria "$rnicro/grub" -d /etc/defualt
+sudo update-grub
 $aria "$rnicro/dwl.tar"
 $aria "$rnicro/bookmarks.html"
 $aria "$rnicro/start-dwl.sh"
@@ -87,15 +88,6 @@ sudo usermod -aG bluetooth $USER
 
 echo "Removing unused services"
 sudo rm -f /var/service/agetty-tty[3-6]
-
-echo "Configuring GRUB"
-printf '%s\n' \
-    "GRUB_DEFAULT=0" \
-    "GRUB_TIMEOUT=0" \
-    'GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3"' |
-    sudo tee /etc/default/grub
-
-sudo update-grub
 
 echo "Writing the post-install checklist"
 printf '%s\n' \
