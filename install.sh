@@ -20,7 +20,7 @@ cd "$HOME"
 
 echo "Creating user directories"
 mkdir -p .config/tofi .config/foot .config/velotype
-mkdir -p Downloads Notes Pictures
+mkdir Downloads Notes Pictures
 
 rnicro=https://github.com/rnicro/setup/raw/refs/heads/main
 aria="aria2c -x16 -s16 -k1M"
