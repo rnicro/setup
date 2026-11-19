@@ -1,0 +1,3 @@
+-[ ] Configure the browser
+-[ ] Change /etc/fstab, add noatime,commit=60
+-[ ] remove todo after setup
