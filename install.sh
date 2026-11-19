@@ -63,7 +63,7 @@ if ldd --version 2>&1 | grep -qi musl; then
     echo "Downloading Velotype"
     $aria https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps
     echo "Downloading LibreWolf"
-    $aria https://github.com/rnicro/librewolf/releases/download/159.0-r4/librewolf-159.0_4.x86_64-musl.xbps
+    $aria https://github.com/rnicro/librewolf/releases/download/160.0-r1/librewolf-160.0_1.x86_64-musl.xbps
 
 else
     echo "glibc detected"
