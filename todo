@@ -1,3 +1,4 @@
 -[ ] Configure the browser
 -[ ] Change /etc/fstab, add noatime,commit=60
 -[ ] remove todo after setup
+-[ ] cleanup any .deb, .xbps, or x86_64-repo-date
