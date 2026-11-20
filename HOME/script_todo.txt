@@ -1,0 +1,11 @@
+- [ ] Make it do installation of OS
+  - [ ] remember that bs wpa\_suppliant, add network suid scan & list
+  - [ ] maybe some tui/visual?
+  - [ ] maybe tarball (have to chroot)?s
+- [ ] Every `> /dev/null` & add detailed `echo` messages
+- [ ] the optional packages are alwas latest
+- [ ] make monorepo
+- [ ] make your own `repository` with a fingerprint
+- [ ] use systemd-boot or any other bootloader
+- [ ] add -o3 or -o2 to dwl compile
+  - [ ] wlroots, mupdf, mesa-dri, mesa-vulkan-intel, yazi
