@@ -6,4 +6,4 @@ case "$v" in
 	*) vol=N/A ;;
 esac
 read -r bat </sys/class/power_supply/BAT0/capacity
-exec tofi-drun --placeholder-text "$vol | $bat% | $(date '+%I:%M %p')"
+exec tofi-drun --placeholder-text "$vol · $bat% · $(date '+%I:%M %p')"
