@@ -96,7 +96,7 @@ echo "Enabling selected services"
 sudo ln -s /etc/sv/tlp /var/service/tlp
 sudo ln -s /etc/sv/dbus /var/service/dbus
 sudo ln -s /etc/sv/elogind /var/service/elogind
-sudo ln -s /etc/sv/bluetoothd /var/service
+#sudo ln -s /etc/sv/bluetoothd /var/service
 
 sudo usermod -aG bluetooth "$USER"
 
