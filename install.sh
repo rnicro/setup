@@ -38,7 +38,7 @@ download "$rnicro/.config/tofi/tofi-status.sh" "$HOME/.config/tofi"
 download "$rnicro/.config/velotype/config.toml" "$HOME/.config/velotype"
 
 download "$rnicro/start-dwl.sh" "$HOME"
-download "$rnicro/bookmarks.html" "$HOME"
+download "$rnicro/bookmarks.html.gpg" "$HOME"
 download "$rnicro/todo" "$HOME"
 download "$rnicro/dwl.tar" "$HOME"
 
