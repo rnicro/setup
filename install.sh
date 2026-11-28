@@ -50,10 +50,10 @@ tar xf dwl.tar
 rm dwl.tar
 
 cd dwl
-rm -f config.h
-make clean
 make
 sudo make install
+make clean
+rm config.h
 
 cd "$HOME"
 
@@ -63,15 +63,20 @@ if ldd --version 2>&1 | grep -qi musl; then
 
     echo "musl detected"
 
-    echo "Downloading Linux kernel"
-    download https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-7.3.0_1.x86_64-musl.xbps "$HOME"
-    download https://github.com/rnicro/kernel/releases/download/kernel-7.3.0_1/linux7.3-headers-7.3.0_1.x86_64-musl.xbps "$HOME"
+    download https://github.com/rnicro/linux/releases/download/7.3.5_1/linux7.3-7.3.5_1.x86_64-musl.xbps "$HOME"
+    download https://github.com/rnicro/linux/releases/download/7.3.5_1/linux7.3-headers-7.3.5_1.x86_64-musl.xbps "$HOME"
 
-    echo "Downloading Velotype"
     download https://github.com/rnicro/velotype/releases/download/0.7.8/velotype-0.7.8_1.x86_64-musl.xbps "$HOME"
 
-    echo "Downloading LibreWolf"
-    download https://github.com/rnicro/librewolf/releases/download/160.0-r1/librewolf-160.0_1.x86_64-musl.xbps "$HOME"
+    download https://github.com/rnicro/Monorepo/releases/download/xbps-repository/librewolf-161.0_7.x86_64-musl.xbps "$HOME"
+
+    download https://github.com/rnicro/Monorepo/releases/download/xbps-repository/wlsunset-0.4.0_2.x86_64-musl.xbps "$HOME"
+
+    download https://github.com/rnicro/brightnessctl/releases/download/0.5.1_2/brightnessctl-0.5.1_2.x86_64-musl.xbps "$HOME"
+
+    download https://github.com/rnicro/tofi/releases/download/0.9.1_2/tofi-0.9.1_2.x86_64-musl.xbps "$HOME"
+
+    download https://github.com/rnicro/aria2/releases/download/1.37.0_3/aria2-1.37.0_3.x86_64-musl.xbps "$HOME"
 
 else
 
